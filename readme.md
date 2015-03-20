@@ -4,7 +4,7 @@
 
 [![Flattr this project](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=phpfatfree&url=https://github.com/bcosca/fatfree)
 
-Condensed in a single ~60KB file, F3 (as we fondly call it) gives you solid foundation, a mature code base, and a no-nonsense approach to writing Web applications. Under the hood is an easy-to-use Web development tool kit, a high-performance URL routing and cache engine, built-in code highlighting, and support for multilingual applications. It's lightweight, easy-to-use, and fast. Most of all, it doesn't get in your way.
+Condensed in a single ~65KB file, F3 (as we fondly call it) gives you solid foundation, a mature code base, and a no-nonsense approach to writing Web applications. Under the hood is an easy-to-use Web development tool kit, a high-performance URL routing and cache engine, built-in code highlighting, and support for multilingual applications. It's lightweight, easy-to-use, and fast. Most of all, it doesn't get in your way.
 
 Whether you're a novice or an expert PHP programmer, F3 will get you up and running in no time. No unnecessary and painstaking installation procedures. No complex configuration required. No convoluted directory structures. There's no better time to start developing Web applications the easy way than right now!
 
@@ -36,8 +36,9 @@ Unlike other frameworks, F3 aims to be usable - not usual.
 
 The philosophy behind the framework and its approach to software architecture is towards minimalism in structural components, avoiding application complexity and striking a balance between code elegance, application performance and programmer productivity.
 
-[![Paypal](ui/images/donate.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MJSQL8N5LPDAY)
-[![Bitcoin](ui/images/bitcoin.png)](https://coinbase.com/checkouts/7986a0da214006256d470f2f8e1a15cf)
+[![Paypal](ui/images/paypal.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MJSQL8N5LPDAY)
+
+![Bitcoin](ui/images/bitcoin.png)
 
 ## Table of Contents
 
@@ -54,9 +55,9 @@ The philosophy behind the framework and its approach to software architecture is
 
 [![Twitter](ui/images/twitter.png)](https://twitter.com/phpfatfree)
 
-### Version 3.2 Is Finally Here!
+### Version 3.4 Is Finally Released!
 
-The latest official release marks a major milestone in the development of the Fat-Free Framework. Packed with exciting new features and outstanding documentation that consumed significant time and effort to develop and refine, version 3.2 is finally available for download. This edition is packed with a bunch of new usability and security features.
+The latest official release welcomes the new year with a bang and marks the final milestone in this version of the Fat-Free Framework. Packed with exciting new features and outstanding documentation that consumed significant time and effort to develop and refine, version 3.4 is now available for download. This edition is packed with a bunch of new usability and security features.
 
 F3 has a stable enterprise-class architecture. Unbeatable performance, user-friendly features and a lightweight footprint. What more can you ask for?
 
@@ -84,7 +85,7 @@ Unzip the contents of the distribution package anywhere in your hard drive. By d
 
 **Important:** If your application uses APC, Memcached, WinCache, XCache, or a filesystem cache, clear all cache entries first before overwriting an older version of the framework with a new one.
 
-Make sure you're running the right version of PHP. F3 does not support versions earlier than PHP 5.3. You'll be getting syntax errors (false positives) all over the place because new language constructs and closures/anonymous functions are not supported by outdated PHP versions. To find out, open your console (`bash` shell on Linux, or `cmd.exe` on Windows):-
+Make sure you're running the right version of PHP. F3 does not support versions earlier than PHP 5.3. You'll be getting syntax errors (false positives) all over the place because new language constructs and closures/anonymous functions are not supported by outdated PHP versions. To find out, open your console (`bash` shell on GNU/Linux, or `cmd.exe` on Windows):-
 
 ```
 /path/to/php -v
@@ -110,7 +111,7 @@ Upgrade if necessary and come back here if you've made the jump to PHP 5.3 or a 
 Time to start writing our first application:-
 
 ``` php
-$f3=require('path/to/base.php');
+$f3 = require('path/to/base.php');
 $f3->route('GET /',
     function() {
         echo 'Hello, world!';
@@ -130,6 +131,8 @@ If the framework sees an incoming request for your Web page located at the root 
 So we've established our first route. But that won't do much, except to let F3 know that there's a process that will handle it and there's some text to display on the user's Web browser. If you have a lot more pages on your site, you need to set up different routes for each group. For now, let's keep it simple. To instruct the framework to start waiting for requests, we issue the `$f3->run()` command.
 
 **Can't Get the Example Running?** If you're having trouble getting this simple program to run on your server, you may have to tweak your Web server settings a bit. Take a look at the sample Apache configuration in the following section (along with the Nginx and Lighttpd equivalents).
+
+**Still having trouble?** Make sure the `$f3 = require('path/to/base.php');` assignment comes before any output in your script. `base.php` modifies the HTTP headers, so any character that is output to the browser before this assignment will cause errors.
 
 ## Routing Engine
 
@@ -163,6 +166,23 @@ HTTP requests can also be routed to static class methods:-
 $f3->route('GET /login','Auth::login');
 ```
 
+Passed arguments are always provided as the second parameter:
+
+``` php
+$f3->route('GET /hello/@name','User::greet');
+
+class User {
+	public static function greet($f3, $args) { //$args is type of Array
+		echo "Hello " . $args['name'];
+	}
+}
+```
+If the provided name argument would be **foo** (/hello/foo), the following output would be shown:
+
+```
+Hello foo
+```
+
 ### Routes and Tokens
 
 As a demonstration of Fat-Free's powerful domain-specific language (DSL), you can specify a single route to handle different possibilities:-
@@ -177,7 +197,7 @@ $f3->route('GET /brew/@count',
 
 This example shows how we can specify a token `@count` to represent part of a URL. The framework will serve any request URL that matches the `/brew/` prefix, like `/brew/99`, `/brew/98`, etc. This will display `'99 bottles of beer on the wall'` and `'98 bottles of beer on the wall'`, respectively. Fat-Free will also accept a page request for `/brew/unbreakable`. (Expect this to display `'unbreakable bottles of beer on the wall'`.) When such a dynamic route is specified, Fat-Free automagically populates the global `PARAMS` array variable with the value of the captured strings in the URL. The `$f3->get()` call inside the callback function retrieves the value of a framework variable. You can certainly apply this method in your code as part of the presentation or business logic. But we'll discuss that in greater detail later.
 
-Notice that Fat-Free understands array dot-notation. You can certainly use `@PARAMS['count']` regular notation, which is prone to typo errors and unbalanced braces. The framework also permits `@PARAMS.count` which is somehow similar to Javascript. This feature is limited to arrays in F3 templates. Take note that `@foo.@bar` is a string concatenation, whereas `@foo.bar` translates to `@foo['bar']`.
+Notice that Fat-Free understands array dot-notation. You can use `PARAMS['count']` regular notation instead in code, which is prone to typo errors and unbalanced braces. In views and templates, the framework permits `@PARAMS.count` notation which is somewhat similar to Javascript. (We'll cover views and templates later.)
 
 Here's another way to access tokens in a request pattern:-
 
@@ -202,6 +222,10 @@ $f3->route('GET /brew/*',
 An important point to consider: You will get Fat-Free (and yourself) confused if you have both `GET /brew/@count` and `GET /brew/*` together in the same application. Use one or the other. Another thing: Fat-Free sees `GET /brew` as separate and distinct from the route `GET /brew/@count`. Each can have different route handlers.
 
 
+### Dynamic Web Sites
+
+Wait a second - in all the previous examples, we never really created any directory in our hard drive to store these routes. The short answer: we don't have to. All F3 routes are virtual. They don't mirror our hard disk folder structure. If you have programs or static files (images, CSS, etc.) that do not use the framework - as long as the paths to these files do not conflict with any route defined in your application - your Web server software will deliver them to the user's browser, provided the server is configured properly.
+
 ### Named Routes
 
 When you define a route, you can assign it a name. Use the route name in your code and templates instead of a typed url. Then if you need to change your urls to please the marketing overlords, you only need to make the change where the route was defined. The route names must follow php variable naming rules (no dots, dashes nor hyphens).
@@ -212,7 +236,7 @@ Let's name a route:-
 $f3->route('GET @beer_list: /beer', 'Beer->list');
 ```
 
-The name is inserted after the route VERB (`GET` in this example) preceeded by an `@` symbol, and separated from the URL portion by a colon `:` symbol. You can insert a space around the colon if that makes it easier to read your code (as shown here).
+The name is inserted after the route VERB (`GET` in this example) preceeded by an `@` symbol, and separated from the URL portion by a colon `:` symbol. You can insert a space after the colon if that makes it easier to read your code (as shown here).
 
 To access the named route in a template, get the value of the named route as the key of the `ALIASES` hive array:-
 
@@ -220,7 +244,7 @@ To access the named route in a template, get the value of the named route as the
 <a href="{{ @ALIASES.beer_list }}">View beer list</a>
 ```
 
-To redirect the visitor to a new URL, call the named route inside the `reroute() method like:-
+To redirect the visitor to a new URL, call the named route inside the `reroute()` method like:-
 
 ``` php
 // a named route is a string value
@@ -240,11 +264,7 @@ $f3->reroute('@beer_list(@country=Germany)');
 $f3->reroute('@beer_list(@country=Germany,@village=Rhine)');
 ```
 
-Don't forget to `urlencode()` your arguments if you have characters that do not comply with RFC 1738 guidelines for well-formed URLs.
-
-### Dynamic Web Sites
-
-Wait a second - in all the previous examples, we never really created any directory in our hard drive to store these routes. The short answer: we don't have to. All F3 routes are virtual. They don't mirror our hard disk folder structure. If you have programs or static files (images, CSS, etc.) that do not use the framework - as long as the paths to these files do not conflict with any route defined in your application - your Web server software will deliver them to the user's browser, provided the server is configured properly.
+Remember to `urlencode()` your arguments if you have characters that do not comply with RFC 1738 guidelines for well-formed URLs.
 
 ### PHP 5.4's Built-In Web Server
 
@@ -277,7 +297,7 @@ You also need to set up Apache so it knows the physical location of `index.php` 
 ``` apache
 DocumentRoot "/var/www/html"
 <Directory "/var/www/html">
-    Options -Indexes FollowSymLinks Includes
+    Options -Indexes +FollowSymLinks +Includes
     AllowOverride All
     Order allow,deny
     Allow from All
@@ -292,7 +312,7 @@ NameVirtualHost *
     ServerName site1.com
     DocumentRoot "/var/www/site1"
     <Directory "/var/www/site1">
-        Options -Indexes FollowSymLinks Includes
+        Options -Indexes +FollowSymLinks +Includes
         AllowOverride All
         Order allow,deny
         Allow from All
@@ -302,7 +322,7 @@ NameVirtualHost *
     ServerName site2.com
     DocumentRoot "/var/www/site2"
     <Directory "/var/www/site2">
-        Options -Indexes FollowSymLinks Includes
+        Options -Indexes +FollowSymLinks +Includes
         AllowOverride All
         Order allow,deny
         Allow from All
@@ -339,6 +359,30 @@ $HTTP["host"] =~ "www\.example\.com$" {
     url.rewrite-once = ( "^/(.*?)(\?.+)?$"=>"/index.php/$1?$2" )
     server.error-handler-404 = "/index.php"
 }
+```
+
+### Sample IIS Configuration
+
+Install the [URL rewrite module](http://www.iis.net/downloads/microsoft/url-rewrite) and the appropriate .NET framework corresponding to your Windows version. Then create a file named `web.config` in your application root with the following contents:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <rule name="Application" stopProcessing="true">
+          <match url=".*" ignoreCase="false" />
+          <conditions logicalGrouping="MatchAll">
+            <add input="{REQUEST_FILENAME}" matchType="IsFile" ignoreCase="false" negate="true" />
+            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" ignoreCase="false" negate="true" />
+          </conditions>
+          <action type="Rewrite" url="index.php" appendQueryString="true" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>
 ```
 
 ### Rerouting
@@ -392,7 +436,9 @@ Fat-Free's `$f3->map()` method provides a ReST interface by mapping HTTP methods
 
 **Note:** Browsers do not implement the HTTP `PUT` and `DELETE` methods in regular HTML forms. These and other ReST methods (`HEAD`, and `CONNECT`) are accessible only via AJAX calls to the server.
 
-If the framework receives an HTTP method that's not implemented by a class, it generates an `HTTP 405 Method Not Allowed` error. F3 automatically responds with the appropriate headers to HTTP `OPTIONS` method requests. The framework will not map this request to a class.
+If the framework receives an HTTP request for a route that maps to a method that is not implemented by a class (perhaps you've made an error in the route mapping, or the method is not written yet), it generates an `HTTP 405 Method Not Allowed` error.
+
+If a client requests HTTP `OPTIONS` for a URL resource, F3 responds with the appropriate HTTP headers that indicate which methods are allowed for the resource (HEAD, GET, PUT, etc). The framework will not map the `OPTIONS` request to a class.
 
 ### The F3 Autoloader
 
@@ -634,7 +680,7 @@ $f3->set('ONERROR',
         // custom error handler code goes here
         // use this if you want to display errors in a
         // format consistent with your site's theme
-        echo $f3->get('ERROR.title');
+        echo $f3->get('ERROR.status');
     }
 );
 ```
@@ -643,7 +689,7 @@ F3 maintains a global variable containing the details of the latest error that o
 
 ```
 ERROR.code - displays the error code (404, 500, etc.)
-ERROR.title - header and page title
+ERROR.status - header and page title
 ERROR.text - error context
 ERROR.trace - stack trace
 ```
@@ -842,6 +888,8 @@ F3 allows you to embed expressions in templates. These expressions may take on v
 {{ @obj->property }}
 ```
 
+An additional note about array expressions: Take note that `@foo.@bar` is a string concatenation `$foo.$bar`), whereas `@foo.bar` translates to `$foo['bar']`. If `$foo[$bar]` is what you intended, use the `@foo[@bar]` regular notation.
+
 Framework variables may also contain anonymous functions:
 
 ``` php
@@ -906,7 +954,7 @@ That's like the `<!-- comment -->` HTML comment tag, but the `<exclude>` directi
 Here's another way of excluding template content or adding comments:-
 
 ``` html
-{{* <p>A chunk of HTML we don't want displayed at the moment</p> *}}
+{* <p>A chunk of HTML we don't want displayed at the moment</p> *}
 ```
 
 ### Conditional Segments
@@ -1206,7 +1254,7 @@ This may have undesirable effects. You might not want all variables to pass thro
 In the case of PHP templates:-
 
 ``` php
-<?php echo Base::instance()->raw($html_content); ?>
+<?php echo View::instance()->raw($html_content); ?>
 ```
 
 As an addition to auto-escaping of F3 variables, the framework also gives you a free hand at sanitizing user input from HTML forms:-
@@ -1226,7 +1274,7 @@ Fat-Free is designed to make the job of interfacing with SQL databases a breeze.
 Establishing communication with a SQL engine like MySQL, SQLite, SQL Server, Sybase, and Oracle is done using the familiar `$f3->set()` command. Connecting to a SQLite database would be:-
 
 ``` php
-$db=new DB\SQL('sqlite:/absolute/path/to/your/database.sqlite'));
+$db=new DB\SQL('sqlite:/absolute/path/to/your/database.sqlite');
 ```
 
 Another example, this time with MySQL:-
@@ -2130,7 +2178,7 @@ Once you get the hang of testing the smallest units of your application, you can
 
 `array ERROR`
 
-* Information about the last HTTP error that occurred. `ERROR.code` is the HTTP status code. `ERROR.title` contains a brief description of the error. `ERROR.text` provides greater detail. For HTTP 500 errors, use `ERROR.trace` to retrieve the stack trace.
+* Information about the last HTTP error that occurred. `ERROR.code` is the HTTP status code. `ERROR.status` contains a brief description of the error. `ERROR.text` provides more detail. For HTTP 500 errors, use `ERROR.trace` to retrieve the stack trace.
 
 `bool ESCAPE`
 
@@ -2211,6 +2259,10 @@ Once you get the hang of testing the smallest units of your application, you can
 `bool QUIET`
 
 * Toggle switch for suppressing or enabling standard output and error messages. Particularly useful in unit testing.
+
+`bool RAW`
+
+* Disable automatic storage of HTTP request body into `BODY`. Should be TRUE when processing large data coming from `php://input` which will not fit in memory. Default value: `FALSE`
 
 `string REALM`
 
@@ -2355,7 +2407,7 @@ Once you get the hang of testing the smallest units of your application, you can
 * Equivalent of the PHP switch-case jump table structure.
 
 ```
-{{* text-block *}}
+{* text-block *}
 ```
 * Alias for `<exclude>`.
 
@@ -2393,23 +2445,26 @@ The Fat-Free Framework is community-driven software. It can't be what it is toda
 
 * GitHub
 * Square Lines, LLC
-* Talis Group, Ltd.
 * Mirosystems
-* Tecnilógica
 * Stehlik & Company
+* Talis Group, Ltd.
+* Tecnilógica
 * G Holdings, LLC
 * S2 Development, Ltd.
 * Store Machine
 * PHP Experts, Inc.
+* Meins und Vogel GmbH
+* Online Prepaid Services
 * Christian Knuth
 * Sascha Ohms
+* Lars Brandi Jensen
 * Jermaine Maree
+* Eyðun Lamhauge
 * Sergey Zaretsky
 * Daniel Kloke
 * Brian Nelson
 * Roberts Lapins
 * Boris Gurevich
-* Eyðun Lamhauge
 * Jose Maria Garrido Diaz
 * Dawn Comfort
 * Johan Viberg
@@ -2448,6 +2503,7 @@ The Fat-Free Framework is community-driven software. It can't be what it is toda
 * FocusHeart
 * Philip Lawrence
 * Peter Beverwyk
+* Judith Grass
 * Randal Hintz
 * Franz Josef
 * Biswajit Nayak
@@ -2462,13 +2518,12 @@ The Fat-Free Framework is community-driven software. It can't be what it is toda
 * Philipp Hirsch
 * Aurélien Botermans
 * Christian Treptow
-* Кубарев Дмитрий
+* Кубарев Дмитрий (Dmitry Kubarev)
 * Alexandru Catalin Trandafir
 * Leigh Harrison
-* Дмитриев Иван
+* Дмитриев Иван (Ivan Dmitriev)
 * IT_GAP
 * Sergeev Andrey
-* Lars Brandi Jensen
 * Steven J Mixon
 * Roland Fath
 * Justin Parker
@@ -2477,12 +2532,32 @@ The Fat-Free Framework is community-driven software. It can't be what it is toda
 * Ryan McKillop
 * Chris Clarke
 * Ngan Ting On
+* Eli Argon
+* Seregin Andrew
+* Marek Toman
+* Diji Enterprises
+* uonick
+* Kamil Kiblis
+* Mars Yau
+* Martin Latinov
+* Malikov Evgene
+* Andres Espinoza Arce
+* Matthew Williamson
+* Andrew Brookes
+* Steve Cove
+* Steven Witten
+* Silvan Seeholzer
 
 Special thanks to the selfless others who expressed their desire to remain anonymous, yet share their time, contribute code, send donations, promote the framework to a wider audience, as well as provide encouragement and regular financial assistance. Their generosity is F3's prime motivation.
 
-[![Paypal](ui/images/donate.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MJSQL8N5LPDAY)
-[![Bitcoin](ui/images/bitcoin.png)](https://coinbase.com/checkouts/7986a0da214006256d470f2f8e1a15cf)
+[![Paypal](ui/images/paypal.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MJSQL8N5LPDAY)
 
-**Copyright (c) 2009-2013 F3::Factory/Bong Cosca &lt;bong&#46;cosca&#64;yahoo&#46;com&gt;**
+![Bitcoin](ui/images/bitcoin.png)
+
+### Legal notice
+
+By making a donation to this project you signify that you acknowledged, understood, accepted, and agreed to the terms and conditions contained in this notice. Your donation to the Fat-Free Framework project is voluntary and is not a fee for any services, goods, or advantages, and making a donation to the project does not entitle you to any services, goods, or advantages. We have the right to use the money you donate to the Fat-Free Framework project in any lawful way and for any lawful purpose we see fit and we are not obligated to disclose the way and purpose to any party unless required by applicable law. Although Fat-Free Framework is free software, to our best knowledge this project does not have any tax-exempt status. The Fat-Free Framework project is neither a registered non-profit corporation nor a registered charity in any country. Your donation may or may not be tax-deductible; please consult this with your tax advisor. We will not publish/disclose your name and e-mail address without your consent, unless required by applicable law. Your donation is non-refundable.
+
+**Copyright (c) 2009-2014 F3::Factory/Bong Cosca &lt;bong&#46;cosca&#64;yahoo&#46;com&gt;**
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/a0b5e3f40092429070b6647a2e5ca6ab "githalytics.com")](http://githalytics.com/bcosca/fatfree)
